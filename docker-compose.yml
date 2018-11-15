@@ -1,0 +1,94 @@
+version: '3'
+services: 
+  pg_pgpool:
+    build:
+        context: .
+        args:
+            - CERTUSERNAME=certuser
+        dockerfile: pg-pgpool.Dockerfile
+    image: pgsql-pgpool:10
+    container_name: pgsql-pgpool
+    privileged: true
+    volumes:
+      - ./:/docker
+  pgnode_master:
+    build:
+        context: .
+        args:
+            - ROLE=master
+            - MASTER_IP=172.22.0.50
+        dockerfile: ./pgnode.Dockerfile
+    image: pgnode/master:latest
+    container_name: pgmaster
+    hostname: pgmaster
+    privileged: true
+    depends_on:
+            - pg_pgpool
+    volumes:
+      - ./:/docker
+    networks:
+      app_net:
+        ipv4_address: 172.22.0.50
+  pgnode_slave:
+    build:
+        context: ./
+        args:
+            - ROLE=standby
+            - MASTER_IP=172.22.0.50
+        dockerfile: pgnode.Dockerfile
+    image: pgnode/slave:latest
+    container_name: pgslave
+    hostname: pgslave
+    privileged: true
+    depends_on:
+            - pgnode_master
+            - pg_pgpool
+    volumes:
+      - ./:/docker
+    networks:
+      app_net:
+        ipv4_address: 172.22.0.51
+  pgpoolnode:
+    build:
+        context: .
+        args:
+            - SLAVE_IP=172.22.0.51
+            - MASTER_IP=172.22.0.50
+        dockerfile: pgpoolnode.Dockerfile
+    image: pgpoolnode:latest
+    container_name: pgpoolnode
+    hostname: pgpoolnode
+    privileged: true
+    depends_on:
+            - pg_pgpool
+            - pgnode_master
+            - pgnode_slave
+    volumes:
+      - ./:/docker
+    networks:
+      app_net:
+        ipv4_address: 172.22.0.52
+  clientnode:
+    build:
+        context: .
+        dockerfile: clientnode.Dockerfile
+    image: clientnode:latest
+    container_name: clientnode
+    hostname: clientnode
+    privileged: true
+    depends_on:
+            - pg_pgpool
+            - pgnode_master
+            - pgnode_slave
+            - pgpoolnode
+    volumes:
+      - ./:/docker
+    networks:
+      app_net:
+        ipv4_address: 172.22.0.53
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 172.22.0.0/24
