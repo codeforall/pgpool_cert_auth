@@ -40,9 +40,10 @@ hostssl   all         all                0.0.0.0/0  cert
 # How to build and run
 
 To run the exmaple do the following:
+```
 ./build_all.sh
 docker-compose up
-
+```
 # Testing
 
 To test the cert auth connect with "certuser" 
