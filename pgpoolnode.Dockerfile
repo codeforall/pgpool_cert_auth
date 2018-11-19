@@ -29,7 +29,7 @@ RUN sed -i "s/^#backend_port1 = .*/backend_port1 = ${PGPORT}/"        ${PGPOOLCO
 RUN sed -i "s/^#backend_weight1 = .*/backend_weight1 = 1/"        ${PGPOOLCONF}/pgpool.conf
 
 RUN sed -i "s/^port = .*/port = ${PGPOOLPORT}/"         ${PGPOOLCONF}/pgpool.conf
-RUN sed -i "s/^pid_file_name = .*/pid_file_name = '\/var\/run\/pgpool-II-${PGMAJOR}\/pgpool.pid'/"  ${PGPOOLCONF}/pgpool.conf
+RUN sed -i "s/^pid_file_name = .*/pid_file_name = '\/var\/run\/pgpool\/pgpool.pid'/"  ${PGPOOLCONF}/pgpool.conf
 RUN sed -i "s/^listen_addresses = 'localhost'/listen_addresses = '*'/"  ${PGPOOLCONF}/pgpool.conf
 RUN sed -i "s/^ssl = .*/ssl = on/"  ${PGPOOLCONF}/pgpool.conf
 RUN sed -i "s/^#ssl_key = .*/ssl_key = '\/certs\/server.key'/"  ${PGPOOLCONF}/pgpool.conf
@@ -53,12 +53,11 @@ RUN echo "hostssl   all         all                0.0.0.0/0  cert" >> ${PGPOOLC
 #create the key file
 RUN sudo -u postgres echo "pool_pass_key" > /home/postgres/.pgpoolkey
 #RUN chmod 0600 /home/postgres/.pgpoolkey
-RUN sudo -u postgres /usr/pgpool-10/bin/pg_enc -u certuser -m cert_password
-RUN sudo -u postgres /usr/pgpool-10/bin/pg_enc -u scramuser -m scram_password
-RUN sudo -u postgres /usr/pgpool-10/bin/pg_enc -u postgres -m postgres
+RUN sudo -u postgres pg_enc -u certuser -m cert_password
+RUN sudo -u postgres pg_enc -u scramuser -m scram_password
+RUN sudo -u postgres pg_enc -u postgres -m postgres
 
 CMD /tmp/wait_for_pg_server.sh && service ${PGPOOLSERVICE_NAME} start && tail -F ${PGPOOLLOG}
-#CMD /tmp/wait_for_pg_server.sh && tail -F ${PGPOOLLOG}
 
 EXPOSE ${PGPOOLPORT}
 EXPOSE ${PCPPORT}

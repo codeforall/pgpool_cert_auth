@@ -6,12 +6,12 @@ ARG CERTUSERNAME
 ENV PGMAJOR=10
 ENV PGPOOLVER=4.0.1
 ENV PGSERVICE_NAME=postgresql-${PGMAJOR}
-ENV PGPOOLSERVICE_NAME=pgpool-II-${PGMAJOR}
+ENV PGPOOLSERVICE_NAME=pgpool
 ENV PATH=/usr/pgsql-${PGMAJOR}/bin:${PATH}
 ENV PGDATA=/var/lib/pgsql/${PGMAJOR}/data
-ENV PGPOOLCONF=/etc/pgpool-II-${PGMAJOR}
+ENV PGPOOLCONF=/etc/pgpool-II/
 ENV PGLOG=/var/lib/pgsql/${PGMAJOR}/pgstartup.log
-ENV PGPOOLLOG=/var/log/pgpool-II-${PGMAJOR}.log
+ENV PGPOOLLOG=/var/log/pgpool.log
 ENV CERTDIR=/certificates
 
 RUN adduser --home-dir /home/postgres --create-home postgres
@@ -20,8 +20,9 @@ RUN rpm -Uvh https://yum.postgresql.org/${PGMAJOR}/redhat/rhel-6-x86_64/pgdg-red
 RUN yum install -y yum-plugin-ovl
 RUN yum -y install sudo
 RUN yum -y install postgresql${PGMAJOR}-server postgresql${PGMAJOR}
-RUN yum -y install pgpool-II-${PGMAJOR}-${PGPOOLVER}
 RUN yum -y install vim
+RUN yum install -y http://www.pgpool.net/yum/rpms/4.0/redhat/rhel-6-x86_64/pgpool-II-pg10-4.0.1-1pgdg.rhel6.x86_64.rpm
+
 RUN echo 'root:root'|chpasswd
 
 # setting postgres user for login
@@ -41,9 +42,6 @@ RUN echo 'postgres:postgres'|chpasswd
 RUN service ${PGSERVICE_NAME} initdb
 
 #set the pgpool config files
-RUN cp ${PGPOOLCONF}/pgpool.conf.sample-stream ${PGPOOLCONF}/pgpool.conf
-RUN cp ${PGPOOLCONF}/pcp.conf.sample ${PGPOOLCONF}/pcp.conf
-RUN cp ${PGPOOLCONF}/pool_hba.conf.sample ${PGPOOLCONF}/pool_hba.conf
 RUN touch ${PGPOOLCONF}/pool_passwd
 
 
