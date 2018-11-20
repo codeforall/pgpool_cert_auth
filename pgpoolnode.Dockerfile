@@ -8,18 +8,15 @@ ENV PGPORT=5432
 ENV PGPOOLPORT=9999
 ENV PCPPORT=9898
 
-#copy the server certificates
-#COPY server.key /server.key
-#COPY server.crt /server.crt
-#COPY root.crt /root.crt
 COPY scripts/wait_for_pg_server.sh /tmp/wait_for_pg_server.sh
 RUN sed -i "s/^IP=/IP=$SLAVE_IP/" /tmp/wait_for_pg_server.sh
 RUN sed -i "s/^PORT=/PORT=5432/" /tmp/wait_for_pg_server.sh
 
+#copy the server certificates to certs dir
 RUN mkdir /certs
-COPY certs/server.key /certs/server.key
-COPY certs/server.crt /certs/server.crt 
-COPY certs/root.crt /certs/root.crt
+RUN cp ${CERTDIR}/server.key /certs/server.key
+RUN cp ${CERTDIR}/server.crt /certs/server.crt
+RUN cp ${CERTDIR}/root.crt /certs/root.crt
 
 # Set up pgpool config files
 RUN sed -i "s/^backend_hostname0 = .*/backend_hostname0 = '${MASTER_IP}'/"         ${PGPOOLCONF}/pgpool.conf

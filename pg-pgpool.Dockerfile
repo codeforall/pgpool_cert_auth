@@ -30,13 +30,13 @@ RUN echo 'postgres   ALL=(ALL)   NOPASSWD: ALL' >> /etc/sudoers
 RUN echo 'postgres:postgres'|chpasswd
 
 #copy scripts for generating certificates
-#RUN mkdir ${CERTDIR}
-#COPY ./scripts/generate_client_ssl_crt.sh ${CERTDIR}/generate_client_ssl_crt.sh
-#COPY ./scripts/generate_server_ssl_crt.sh ${CERTDIR}/generate_server_ssl_crt.sh
+RUN mkdir ${CERTDIR}
+COPY ./scripts/generate_client_ssl_crt.sh ${CERTDIR}/generate_client_ssl_crt.sh
+COPY ./scripts/generate_server_ssl_crt.sh ${CERTDIR}/generate_server_ssl_crt.sh
 
 #create certificates
-#RUN if [ "x$CERTUSERNAME" = "x" ] ; then cd ${CERTDIR} && ./generate_server_ssl_crt.sh certuser; else cd ${CERTDIR} && ./generate_server_ssl_crt.sh ${CERTUSERNAME}; fi
-#RUN if [ "x$CERTUSERNAME" = "x" ] ; then cd ${CERTDIR} && ./generate_client_ssl_crt.sh certuser; else cd ${CERTDIR} && ./generate_client_ssl_crt.sh ${CERTUSERNAME}; fi
+RUN if [ "x$CERTUSERNAME" = "x" ] ; then cd ${CERTDIR} && ./generate_server_ssl_crt.sh certuser; else cd ${CERTDIR} && ./generate_server_ssl_crt.sh ${CERTUSERNAME}; fi
+RUN if [ "x$CERTUSERNAME" = "x" ] ; then cd ${CERTDIR} && ./generate_client_ssl_crt.sh certuser; else cd ${CERTDIR} && ./generate_client_ssl_crt.sh ${CERTUSERNAME}; fi
 
 #initialize database
 RUN service ${PGSERVICE_NAME} initdb

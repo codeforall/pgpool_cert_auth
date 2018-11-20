@@ -41,7 +41,7 @@ hostssl   all         all                0.0.0.0/0  cert
 
 To run the exmaple do the following:
 ```
-./build_all.sh
+docker-compose build
 docker-compose up
 ```
 # Testing

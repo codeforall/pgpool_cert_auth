@@ -9,19 +9,15 @@ ENV ROLE_=$ROLE
 ENV MASTER_IP_=$MASTER_IP
 
 
-#copy the client certificates
-#RUN mkdir ~/.postgresql
-
 COPY ./scripts/setup_pg_server.sh /tmp/setup_pg_server.sh
 RUN chmod u+x /tmp/setup_pg_server.sh
 RUN sed -i "s/^MASTER_IP=/MASTER_IP=$MASTER_IP/" /tmp/setup_pg_server.sh
 RUN sed -i "s/^ROLE=/ROLE=$ROLE/" /tmp/setup_pg_server.sh
 
-#copy the server certificates
-COPY certs/server.key ${PGDATA}/server.key
-COPY certs/server.crt ${PGDATA}/server.crt 
-COPY certs/root.crt ${PGDATA}/root.crt
-
+#copy the server certificates data directory
+RUN cp ${CERTDIR}/server.key ${PGDATA}/server.key
+RUN cp ${CERTDIR}/server.crt ${PGDATA}/server.crt
+RUN cp ${CERTDIR}/root.crt ${PGDATA}/root.crt
 
 RUN chmod 0600 ${PGDATA}/server.key && chown postgres:postgres ${PGDATA}/server.key
 RUN chmod 0600 ${PGDATA}/server.crt && chown postgres:postgres ${PGDATA}/server.crt
@@ -36,6 +32,7 @@ RUN echo "listen_addresses = '*'"    >> ${PGDATA}/postgresql.conf
 RUN echo "ssl = on" >> ${PGDATA}/postgresql.conf
 RUN echo "ssl_cert_file = 'server.crt'" >> ${PGDATA}/postgresql.conf
 RUN echo "ssl_key_file = 'server.key'" >> ${PGDATA}/postgresql.conf
+RUN echo "ssl_ca_file = 'root.crt'" >> ${PGDATA}/postgresql.conf
 
 RUN echo "local  all         all                 trust" >  ${PGDATA}/pg_hba.conf
 RUN echo "local  replication all                 trust" >> ${PGDATA}/pg_hba.conf
